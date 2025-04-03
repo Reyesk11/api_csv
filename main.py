@@ -4,6 +4,7 @@ import pandas as pd
 import unidecode
 import re
 from fastapi.responses import PlainTextResponse
+from io import StringIO  # Importar StringIO desde io
 
 app = FastAPI()
 
@@ -46,15 +47,15 @@ def health_check():
 async def normalize_csv(data: CSVData):
     """Normaliza un CSV: elimina tildes, espacios y normaliza formatos"""
     try:
-        # Convertir CSV a DataFrame
-        df = pd.read_csv(pd.compat.StringIO(data.csv_content))
+        # Convertir CSV a DataFrame usando StringIO
+        df = pd.read_csv(StringIO(data.csv_content))
         
         # Normalizar todas las columnas de texto
         for col in df.columns:
             if df[col].dtype == 'object':
                 df[col] = df[col].apply(normalize_text)
         
-        # Normalizar teléfonos (si existe la columna)
+        # Normalizar teléfonos (si existe la columna "CONTACTO 1")
         if "CONTACTO 1" in df.columns:
             df["CONTACTO 1"] = df["CONTACTO 1"].apply(lambda x: re.sub(r'[^0-9]', '', str(x)))
         
